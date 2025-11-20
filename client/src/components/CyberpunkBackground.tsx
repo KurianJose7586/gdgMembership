@@ -1,7 +1,12 @@
 import { useEffect, useState } from "react";
 
-export default function CyberpunkBackground() {
+interface CyberpunkBackgroundProps {
+  isEasterEggActive?: boolean;
+}
+
+export default function CyberpunkBackground({ isEasterEggActive }: CyberpunkBackgroundProps) {
   const [lines, setLines] = useState<Array<{ id: number; left: number; duration: number; delay: number }>>([]);
+  const [bows, setBows] = useState<Array<{ id: number; top: number; left: number; duration: number; delay: number }>>([]);
 
   useEffect(() => {
     const generateLines = () => {
@@ -14,6 +19,21 @@ export default function CyberpunkBackground() {
     };
     setLines(generateLines());
   }, []);
+
+  useEffect(() => {
+    if (isEasterEggActive) {
+      const generateBows = () => {
+        return Array.from({ length: 25 }, (_, i) => ({
+          id: i,
+          top: Math.random() * 100,
+          left: Math.random() * 100,
+          duration: 4 + Math.random() * 4,
+          delay: Math.random() * 5,
+        }));
+      };
+      setBows(generateBows());
+    }
+  }, [isEasterEggActive]);
 
   return (
     <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
@@ -35,6 +55,22 @@ export default function CyberpunkBackground() {
           <rect width="100%" height="100%" fill="url(#grid)" />
         </svg>
       </div>
+
+      {/* Easter Egg Bows */}
+      {isEasterEggActive && bows.map((bow) => (
+        <div
+          key={`bow-${bow.id}`}
+          className="absolute text-2xl opacity-0"
+          style={{
+            top: `${bow.top}%`,
+            left: `${bow.left}%`,
+            animation: `bowFade ${bow.duration}s ease-in-out ${bow.delay}s infinite`,
+            textShadow: '0 0 10px rgba(255, 105, 180, 0.5)'
+          }}
+        >
+          🎀
+        </div>
+      ))}
 
       {lines.map((line) => (
         <div
@@ -97,6 +133,17 @@ export default function CyberpunkBackground() {
           50% {
             opacity: 0.8;
             transform: scale(1.5);
+          }
+        }
+
+        @keyframes bowFade {
+          0%, 100% {
+            opacity: 0;
+            transform: scale(0.8) rotate(-10deg);
+          }
+          50% {
+            opacity: 0.6;
+            transform: scale(1.2) rotate(10deg);
           }
         }
       `}</style>

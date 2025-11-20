@@ -15,6 +15,7 @@ export default function Home() {
   const [mode, setMode] = useState<MissionMode>("offer");
   const [email, setEmail] = useState("");
   const [mission, setMission] = useState<Mission | null>(null);
+  const [isEasterEggActive, setIsEasterEggActive] = useState(false); // Added state
   const { toast } = useToast();
 
   // EASTER EGG LOGIC
@@ -23,26 +24,22 @@ export default function Home() {
     let inputBuffer = "";
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      // --- FIX START ---
-      // Guard clause: If e.key doesn't exist (e.g. autofill), stop immediately
       if (!e.key) return; 
-      // --- FIX END ---
 
       inputBuffer += e.key.toLowerCase();
       
-      // Keep buffer size manageable
       if (inputBuffer.length > secretCode.length) {
         inputBuffer = inputBuffer.slice(-secretCode.length);
       }
 
       if (inputBuffer === secretCode) {
+        setIsEasterEggActive(true); // Activate the background effect
         toast({
           title: "🦄 SYSTEM OVERRIDE INITIATED 🦄",
           description: "Developer God Mode Unlocked: Vanshika is watching...",
           className: "border-pink-500 text-pink-500 bg-black",
           duration: 5000,
         });
-        // Optional: Add a fun visual effect here, like changing the primary color temporarily
         document.documentElement.style.setProperty('--primary', '300 100% 50%'); // Neon Pink
       }
     };
@@ -105,7 +102,7 @@ export default function Home() {
   return (
     <div className="min-h-screen relative">
       <MatrixRain />
-      <CyberpunkBackground />
+      <CyberpunkBackground isEasterEggActive={isEasterEggActive} />
       
       <div className="relative z-10 min-h-screen flex items-center justify-center p-4">
         {state === "input" && (
