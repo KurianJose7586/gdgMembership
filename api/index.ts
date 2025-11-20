@@ -1,3 +1,3 @@
-import { app } from '../server/routes';
+import { app } from '../server/routes.js';
 
 export default app;

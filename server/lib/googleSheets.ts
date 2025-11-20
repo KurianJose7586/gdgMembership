@@ -1,5 +1,5 @@
 import { google } from 'googleapis';
-import { MissionRecord } from '../../shared/schema';
+import { MissionRecord } from '../../shared/schema.js';
 
 const SPREADSHEET_NAME = 'Chaos Architect Missions';
 const SHEET_NAME = 'Missions';

@@ -1,7 +1,7 @@
 import express, { type Request, type Response } from "express";
-import { insertMissionSchema } from "../shared/schema"; // Fixed relative path
-import { generateChaosMission } from "./lib/groq";
-import { getMissionByEmail, saveMission, verifyStudentEmail } from "./lib/googleSheets";
+import { insertMissionSchema } from "../shared/schema.js"; 
+import { generateChaosMission } from "./lib/groq.js";
+import { getMissionByEmail, saveMission, verifyStudentEmail } from "./lib/googleSheets.js";
 
 const app = express();
 
