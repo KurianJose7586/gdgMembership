@@ -1,0 +1,27 @@
+node_modules
+dist
+.DS_Store
+server/public
+vite.config.ts.*
+*.tar.gz
+.env
+/attached_assets# Node artifacts
+node_modules/
+dist/
+build/
+
+# env & local config (do NOT push secrets)
+.env
+.env.local
+.local/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Vercel / IDE / logs
+vercel.json
+*.log
+
+# TypeScript build caches
+*.tsbuildinfo
