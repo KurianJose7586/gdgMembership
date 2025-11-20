@@ -20,7 +20,6 @@ build/
 Thumbs.db
 
 # Vercel / IDE / logs
-vercel.json
 *.log
 
 # TypeScript build caches
