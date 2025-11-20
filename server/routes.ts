@@ -1,5 +1,6 @@
 import express, { type Request, type Response } from "express";
-import { insertMissionSchema } from "@shared/schema";
+// FIX: Use relative path instead of alias
+import { insertMissionSchema } from "../shared/schema";
 import { generateChaosMission } from "./lib/groq";
 import { getMissionByEmail, saveMission, verifyStudentEmail } from "./lib/googleSheets";
 

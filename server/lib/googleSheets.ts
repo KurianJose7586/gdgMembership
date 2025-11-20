@@ -1,5 +1,6 @@
 import { google } from 'googleapis';
-import { MissionRecord } from '@shared/schema';
+// FIX: Use relative path instead of alias
+import { MissionRecord } from '../../shared/schema';
 
 // Standard Authentication (Local/Production)
 const auth = new google.auth.GoogleAuth({
