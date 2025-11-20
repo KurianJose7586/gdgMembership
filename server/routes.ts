@@ -33,6 +33,7 @@ app.post("/api/mission", async (req: Request, res: Response) => {
         antagonist: existingMission.antagonist,
         task: existingMission.task,
         techStack: existingMission.techStack,
+        isNew: false // <--- FIX: Tell frontend this is an existing mission
       });
     }
 
@@ -58,6 +59,7 @@ app.post("/api/mission", async (req: Request, res: Response) => {
       antagonist: missionRecord.antagonist,
       task: missionRecord.task,
       techStack: missionRecord.techStack,
+      isNew: true // <--- FIX: Tell frontend this is a brand new mission
     });
 
   } catch (error: any) {
