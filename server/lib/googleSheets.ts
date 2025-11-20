@@ -1,21 +1,5 @@
 import { google } from 'googleapis';
-// FIX: Use relative path instead of alias
 import { MissionRecord } from '../../shared/schema';
-
-// Standard Authentication (Local/Production)
-const auth = new google.auth.GoogleAuth({
-  credentials: {
-    client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
-    private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-  },
-  scopes: [
-    'https://www.googleapis.com/auth/spreadsheets',
-    'https://www.googleapis.com/auth/drive',
-  ],
-});
-
-const sheets = google.sheets({ version: 'v4', auth });
-const drive = google.drive({ version: 'v3', auth });
 
 const SPREADSHEET_NAME = 'Chaos Architect Missions';
 const SHEET_NAME = 'Missions';
@@ -25,8 +9,31 @@ const STUDENTS_LIST_TAB_NAME = 'list';
 let cachedSpreadsheetId: string | null = null;
 let cachedStudentListId: string | null = null;
 
-// Helper to find a spreadsheet ID by name
+// Helper to get authenticated clients only when needed
+function getClients() {
+  if (!process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || !process.env.GOOGLE_PRIVATE_KEY) {
+    throw new Error("Missing Google Credentials in Environment Variables");
+  }
+
+  const auth = new google.auth.GoogleAuth({
+    credentials: {
+      client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+      private_key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+    },
+    scopes: [
+      'https://www.googleapis.com/auth/spreadsheets',
+      'https://www.googleapis.com/auth/drive',
+    ],
+  });
+
+  return {
+    sheets: google.sheets({ version: 'v4', auth }),
+    drive: google.drive({ version: 'v3', auth })
+  };
+}
+
 async function findSpreadsheetId(name: string): Promise<string | null> {
+  const { drive } = getClients();
   const response = await drive.files.list({
     q: `name='${name}' and mimeType='application/vnd.google-apps.spreadsheet' and trashed=false`,
     fields: 'files(id, name)',
@@ -40,13 +47,13 @@ async function findSpreadsheetId(name: string): Promise<string | null> {
 async function ensureMissionSpreadsheetExists() {
   if (cachedSpreadsheetId) return cachedSpreadsheetId;
 
+  const { sheets } = getClients();
   const existingId = await findSpreadsheetId(SPREADSHEET_NAME);
   if (existingId) {
     cachedSpreadsheetId = existingId;
     return cachedSpreadsheetId;
   }
 
-  // Create if it doesn't exist
   const createResponse = await sheets.spreadsheets.create({
     requestBody: {
       properties: { title: SPREADSHEET_NAME },
@@ -55,7 +62,7 @@ async function ensureMissionSpreadsheetExists() {
         data: [{
           rowData: [{
             values: [
-              { userEnteredValue: { stringValue: 'Email' } }, // Header updated
+              { userEnteredValue: { stringValue: 'Email' } },
               { userEnteredValue: { stringValue: 'Title' } },
               { userEnteredValue: { stringValue: 'Lore' } },
               { userEnteredValue: { stringValue: 'Antagonist' } },
@@ -73,27 +80,27 @@ async function ensureMissionSpreadsheetExists() {
   return cachedSpreadsheetId;
 }
 
-// New function to verify email against "Students List"
 export async function verifyStudentEmail(email: string): Promise<boolean> {
   try {
+    const { sheets } = getClients();
+    
     if (!cachedStudentListId) {
       cachedStudentListId = await findSpreadsheetId(STUDENTS_LIST_SHEET_NAME);
     }
 
     if (!cachedStudentListId) {
       console.error(`Spreadsheet "${STUDENTS_LIST_SHEET_NAME}" not found.`);
-      return false; // Fail safe: if list doesn't exist, no one gets in.
+      return false;
     }
 
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId: cachedStudentListId,
-      range: `${STUDENTS_LIST_TAB_NAME}!A:B`, // scanning first few columns
+      range: `${STUDENTS_LIST_TAB_NAME}!A:B`,
     });
 
     const rows = response.data.values;
     if (!rows) return false;
 
-    // Flatten rows and check if email exists (case-insensitive)
     const allEmails = rows.flat().map(e => String(e).toLowerCase().trim());
     return allEmails.includes(email.toLowerCase().trim());
 
@@ -105,6 +112,7 @@ export async function verifyStudentEmail(email: string): Promise<boolean> {
 
 export async function getMissionByEmail(email: string): Promise<MissionRecord | null> {
   try {
+    const { sheets } = getClients();
     const spreadsheetId = await ensureMissionSpreadsheetExists();
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId,
@@ -116,7 +124,6 @@ export async function getMissionByEmail(email: string): Promise<MissionRecord | 
 
     for (let i = 1; i < rows.length; i++) {
       const row = rows[i];
-      // Check column 0 (Email)
       if (row[0] && row[0].toLowerCase().trim() === email.toLowerCase().trim()) {
         return {
           email: row[0],
@@ -138,6 +145,7 @@ export async function getMissionByEmail(email: string): Promise<MissionRecord | 
 
 export async function saveMission(mission: MissionRecord): Promise<void> {
   try {
+    const { sheets } = getClients();
     const spreadsheetId = await ensureMissionSpreadsheetExists();
     await sheets.spreadsheets.values.append({
       spreadsheetId,

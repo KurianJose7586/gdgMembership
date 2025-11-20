@@ -1,14 +1,5 @@
 import Groq from "groq-sdk";
 
-// Ensure the API key is loaded
-if (!process.env.GROQ_API_KEY) {
-  console.error("Error: GROQ_API_KEY is missing from environment variables.");
-}
-
-const groq = new Groq({
-  apiKey: process.env.GROQ_API_KEY,
-});
-
 export interface GeneratedMission {
   title: string;
   lore: string;
@@ -19,8 +10,16 @@ export interface GeneratedMission {
 
 export async function generateChaosMission(): Promise<GeneratedMission> {
   try {
+    // Initialize inside the function to avoid top-level crashes if env var is missing
+    if (!process.env.GROQ_API_KEY) {
+      throw new Error("GROQ_API_KEY is missing from environment variables.");
+    }
+
+    const groq = new Groq({
+      apiKey: process.env.GROQ_API_KEY,
+    });
+
     const response = await groq.chat.completions.create({
-      // Llama 3.3 70B is excellent for JSON and logic, and very fast on Groq
       model: "llama-3.3-70b-versatile", 
       messages: [
         {
@@ -51,7 +50,6 @@ You MUST respond with a valid JSON object in this exact format:
           content: "Generate a new chaos mission."
         }
       ],
-      // Groq supports JSON mode to ensure valid output
       response_format: { type: "json_object" },
       temperature: 0.7,
     });

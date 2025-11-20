@@ -1,46 +1,13 @@
 import express, { type Request, type Response } from "express";
-// FIX: Use relative path instead of alias
-import { insertMissionSchema } from "../shared/schema";
+import { insertMissionSchema } from "../shared/schema"; // Fixed relative path
 import { generateChaosMission } from "./lib/groq";
 import { getMissionByEmail, saveMission, verifyStudentEmail } from "./lib/googleSheets";
 
 const app = express();
 
-// Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// Logging Middleware
-app.use((req, res, next) => {
-  const start = Date.now();
-  const path = req.path;
-  let capturedJsonResponse: Record<string, any> | undefined = undefined;
-
-  const originalResJson = res.json;
-  res.json = function (bodyJson, ...args) {
-    capturedJsonResponse = bodyJson;
-    return originalResJson.apply(res, [bodyJson, ...args]);
-  };
-
-  res.on("finish", () => {
-    const duration = Date.now() - start;
-    if (path.startsWith("/api")) {
-      let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
-      if (capturedJsonResponse) {
-        logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
-      }
-
-      if (logLine.length > 80) {
-        logLine = logLine.slice(0, 79) + "…";
-      }
-      console.log(logLine);
-    }
-  });
-
-  next();
-});
-
-// API Routes
 app.post("/api/mission", async (req: Request, res: Response) => {
   try {
     const { email } = insertMissionSchema.parse(req.body);
@@ -95,13 +62,13 @@ app.post("/api/mission", async (req: Request, res: Response) => {
 
   } catch (error: any) {
     console.error("Error in /api/mission:", error);
-    // Handle Zod validation errors specifically
     if (error.issues) {
       return res.status(400).json({ error: "Invalid Input", details: error.issues });
     }
+    // Return JSON error instead of crashing
     return res.status(500).json({ 
-      error: "Failed to generate or retrieve mission",
-      details: error.message 
+      error: "Server Error",
+      message: error.message || "Failed to generate or retrieve mission" 
     });
   }
 });
