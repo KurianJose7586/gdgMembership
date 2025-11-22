@@ -69,6 +69,7 @@ async function ensureMissionSpreadsheetExists() {
               { userEnteredValue: { stringValue: 'Task' } },
               { userEnteredValue: { stringValue: 'Tech Stack' } },
               { userEnteredValue: { stringValue: 'Timestamp' } },
+              { userEnteredValue: { stringValue: 'Status' } }, // Added Header
             ]
           }]
         }]
@@ -116,13 +117,14 @@ export async function getMissionByEmail(email: string): Promise<MissionRecord | 
     const spreadsheetId = await ensureMissionSpreadsheetExists();
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId,
-      range: `${SHEET_NAME}!A:G`,
+      range: `${SHEET_NAME}!A:H`, // Extended range to include Status column
     });
 
     const rows = response.data.values;
     if (!rows || rows.length <= 1) return null;
 
-    for (let i = 1; i < rows.length; i++) {
+    // Search BACKWARDS to find the LATEST mission status for this user
+    for (let i = rows.length - 1; i >= 1; i--) {
       const row = rows[i];
       if (row[0] && row[0].toLowerCase().trim() === email.toLowerCase().trim()) {
         return {
@@ -133,6 +135,7 @@ export async function getMissionByEmail(email: string): Promise<MissionRecord | 
           task: row[4],
           techStack: row[5],
           timestamp: row[6],
+          status: (row[7] as 'active' | 'rejected' | 'completed') || 'active', // Default to active if missing
         };
       }
     }
@@ -149,7 +152,7 @@ export async function saveMission(mission: MissionRecord): Promise<void> {
     const spreadsheetId = await ensureMissionSpreadsheetExists();
     await sheets.spreadsheets.values.append({
       spreadsheetId,
-      range: `${SHEET_NAME}!A:G`,
+      range: `${SHEET_NAME}!A:H`,
       valueInputOption: 'RAW',
       requestBody: {
         values: [[
@@ -160,6 +163,7 @@ export async function saveMission(mission: MissionRecord): Promise<void> {
           mission.task,
           mission.techStack,
           mission.timestamp,
+          mission.status, // Save the status
         ]],
       },
     });

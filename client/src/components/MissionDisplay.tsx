@@ -1,8 +1,8 @@
-import { useState } from "react"; // Added useState
+import { useState } from "react";
 import { AlertTriangle, Code, Skull, Scroll } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils"; // Added cn utility
+import { cn } from "@/lib/utils";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,16 +27,16 @@ export interface Mission {
 interface MissionDisplayProps {
   mission: Mission;
   studentId: string;
-  onReset: () => void;
+  onReject: () => void;
   onAccept: () => void;
 }
 
-export default function MissionDisplay({ mission, studentId, onReset, onAccept }: MissionDisplayProps) {
+export default function MissionDisplay({ mission, studentId, onReject, onAccept }: MissionDisplayProps) {
   const [isShaking, setIsShaking] = useState(false);
 
   const triggerShake = () => {
     setIsShaking(true);
-    setTimeout(() => setIsShaking(false), 400); // Reset after animation duration
+    setTimeout(() => setIsShaking(false), 400);
   };
 
   return (
@@ -45,7 +45,7 @@ export default function MissionDisplay({ mission, studentId, onReset, onAccept }
         boxShadow: '0 0 30px rgba(0, 255, 65, 0.4)'
       }}>
         <div className="bg-card p-8 space-y-8">
-          {/* ... Header Section (unchanged) ... */}
+          {/* ... Header Section ... */}
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
               <Badge 
@@ -66,7 +66,7 @@ export default function MissionDisplay({ mission, studentId, onReset, onAccept }
             <Code className="w-8 h-8 text-primary flex-shrink-0" />
           </div>
 
-          {/* ... Mission Details (Lore, Antagonist, Task) (unchanged) ... */}
+          {/* ... Mission Details ... */}
           <div className="space-y-6">
             <div className="border-l-4 border-chart-3 pl-6 py-2">
               <div className="flex items-center gap-2 mb-3">
@@ -121,13 +121,13 @@ export default function MissionDisplay({ mission, studentId, onReset, onAccept }
             </div>
           </div>
 
-          {/* Action Buttons with Popup and Shake Trigger */}
+          {/* Action Buttons */}
           <div className="pt-4 flex flex-col gap-3">
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button
                   data-testid="button-accept-mission"
-                  onClick={triggerShake} // Added shake trigger here
+                  onClick={triggerShake}
                   className="w-full uppercase font-semibold text-lg py-6 hover:scale-[1.02] transition-transform"
                 >
                   Accept Mission
@@ -158,15 +158,41 @@ export default function MissionDisplay({ mission, studentId, onReset, onAccept }
               </AlertDialogContent>
             </AlertDialog>
 
-            <Button
-              data-testid="button-not-worthy"
-              onClick={onReset}
-              variant="ghost"
-              size="sm"
-              className="text-xs text-muted-foreground hover:text-foreground"
-            >
-              I am not worthy
-            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  data-testid="button-not-worthy"
+                  variant="ghost"
+                  size="sm"
+                  className="text-xs text-muted-foreground hover:text-foreground hover:text-red-500 transition-colors"
+                >
+                  I am not worthy (Reject Mission)
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent className="border-2 border-destructive bg-black/95 text-destructive-foreground">
+                <AlertDialogHeader>
+                  <AlertDialogTitle className="text-2xl uppercase font-bold text-destructive flex items-center gap-2">
+                    <Skull className="w-6 h-6" /> WARNING: PERMANENT EXILE
+                  </AlertDialogTitle>
+                  <AlertDialogDescription className="text-red-300 text-md font-mono">
+                    <p className="mb-4">Rejecting a mission is a sign of weakness.</p>
+                    <p className="mb-4 font-bold">If you proceed, your email will be PERMANENTLY BANNED from the system. You will never receive another mission.</p>
+                    <p>Are you absolutely sure you want to quit?</p>
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel className="border-gray-500 text-gray-400 hover:text-white">
+                    I changed my mind
+                  </AlertDialogCancel>
+                  <AlertDialogAction 
+                    onClick={onReject}
+                    className="bg-destructive text-white font-bold hover:bg-destructive/80"
+                  >
+                    YES, I QUIT
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
         </div>
       </div>

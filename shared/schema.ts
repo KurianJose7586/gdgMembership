@@ -25,4 +25,5 @@ export interface MissionRecord {
   task: string;
   techStack: string;
   timestamp: string;
+  status: 'active' | 'rejected' | 'completed'; // Added status field
 }

@@ -8,7 +8,7 @@ export interface GeneratedMission {
   tech_stack: string;
 }
 
-export async function generateChaosMission(): Promise<GeneratedMission> {
+export async function generateChaosMission(isRetryAfterRejection: boolean = false): Promise<GeneratedMission> {
   try {
     // Initialize inside the function to avoid top-level crashes if env var is missing
     if (!process.env.GROQ_API_KEY) {
@@ -19,14 +19,23 @@ export async function generateChaosMission(): Promise<GeneratedMission> {
       apiKey: process.env.GROQ_API_KEY,
     });
 
+    let systemContext = `You are The Chaos Architect, a mischievous AI that creates fun, fictional web development challenges for students.
+    Generate a simple, humorous scenario involving everyday tech gone wrong.`;
+
+    if (isRetryAfterRejection) {
+      systemContext += `
+      IMPORTANT CONTEXT: The student PREVIOUSLY REJECTED a mission because they were "not worthy". 
+      You must MOCK them for their cowardice in the 'lore' or 'antagonist' section. 
+      Call them out for quitting. Make the new mission slightly more ridiculous or "punishing" (in a funny way) as penance.
+      `;
+    }
+
     const response = await groq.chat.completions.create({
       model: "llama-3.3-70b-versatile", 
       messages: [
         {
           role: "system",
-          content: `You are The Chaos Architect, a mischievous AI that creates fun, fictional web development challenges for students.
-
-Generate a simple, humorous scenario involving everyday tech gone wrong.
+          content: `${systemContext}
 
 The technical task MUST be:
 - Web development focused (frontend + backend)
@@ -51,7 +60,7 @@ You MUST respond with a valid JSON object in this exact format:
         }
       ],
       response_format: { type: "json_object" },
-      temperature: 0.7,
+      temperature: 0.8, // Increased slightly for better roasting
     });
 
     const content = response.choices[0]?.message?.content;
