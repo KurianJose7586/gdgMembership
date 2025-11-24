@@ -140,7 +140,7 @@ export default function MissionDisplay({ mission, studentId, onReject, onAccept 
                   </AlertDialogTitle>
                   <AlertDialogDescription className="text-gray-400 text-md">
                     <p className="mb-2">By accepting this mission, you are binding your neural link to the Chaos Architect mainframe.</p> 
-                    <p>Deadline for submission is <span className="text-primary font-bold">November 30th, 2025</span>.</p>
+                    <p>Deadline for submission is <span className="text-primary font-bold">November 25th, 2025</span>.</p>
                     <p className="mt-2 italic">Failure is not an option. Are you ready to proceed?</p>
                   </AlertDialogDescription>
                 </AlertDialogHeader>

@@ -14,7 +14,7 @@ export default function ActiveMissionDisplay({ mission, studentId }: ActiveMissi
 
   useEffect(() => {
     // Target Date: November 30, 2025
-    const targetDate = new Date("2025-11-30T23:59:59").getTime();
+    const targetDate = new Date("2025-11-25T23:59:59").getTime();
 
     const interval = setInterval(() => {
       const now = new Date().getTime();
